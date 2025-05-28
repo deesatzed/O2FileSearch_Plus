@@ -1,0 +1,12 @@
+# FastAPI and server
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+python-multipart>=0.0.6
+
+# Database and file processing
+chardet>=5.0.0
+python-magic>=0.4.27
+apscheduler>=3.10.0
+
+# Standard library modules (included with Python)
+# sqlite3, hashlib, pathlib, datetime, os, json, threading, time, logging, pwd, mimetypes, asyncio
