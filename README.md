@@ -97,6 +97,74 @@ Replace `https://github.com/your-username/O2FileSearchPlus.git` with the actual 
     ```
     The frontend application will typically be available at `http://localhost:3000`. If port 3000 is busy, Next.js will automatically pick the next available port (e.g., 3001).
 
+## Running on macOS
+
+The project runs well on macOS with Homebrew. If you do not already have Homebrew installed, first install it with:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+```
+
+Then install the required dependencies:
+
+```bash
+brew install python@3.11 node libmagic
+```
+
+The backend relies on `python-magic`, which uses `libmagic`. If you encounter errors about missing magic bindings, run `brew install libmagic`.
+
+To run the backend manually:
+
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python3 -m uvicorn main:app --host 0.0.0.0 --port 8000
+```
+
+To run the frontend manually:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+### Launchd Service Example
+
+You can run the backend as a Launchd service by creating `~/Library/LaunchAgents/com.o2filesearch.backend.plist`:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.o2filesearch.backend</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/local/bin/python3</string>
+    <string>/path/to/O2FileSearchPlus/backend/main.py</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/path/to/O2FileSearchPlus/backend</string>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/tmp/o2filesearch.log</string>
+  <key>StandardErrorPath</key>
+  <string>/tmp/o2filesearch.err</string>
+</dict>
+</plist>
+```
+
+Load it with:
+
+```bash
+launchctl load ~/Library/LaunchAgents/com.o2filesearch.backend.plist
+```
+
 ## Usage
 
 1.  **Start Servers**: Ensure both backend and frontend servers are running.
