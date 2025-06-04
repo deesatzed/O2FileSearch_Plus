@@ -32,52 +32,89 @@ print_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
-# Check if running on Linux
-if [[ "$OSTYPE" != "linux-gnu"* ]]; then
-    print_warning "This script is designed for Linux. Some features may not work on other systems."
+# Detect operating system
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="macos"
+    print_warning "macOS detected. Homebrew will be used for missing dependencies."
+elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+    OS="linux"
+else
+    OS="other"
+    print_warning "This script is primarily tested on Linux and macOS."
 fi
 
 # Check for required commands
 check_command() {
-    if ! command -v $1 &> /dev/null; then
-        print_error "$1 is not installed. Please install it first."
-        exit 1
+    local cmd="$1"
+    local brew_pkg="${2:-$cmd}"
+    if ! command -v "$cmd" &> /dev/null; then
+        if [[ "$OS" == "macos" ]]; then
+            if command -v brew &> /dev/null; then
+                print_warning "$cmd not found. Installing $brew_pkg via Homebrew..."
+                brew install "$brew_pkg"
+            else
+                print_error "$cmd is required but Homebrew is not installed."
+                echo "Install Homebrew from https://brew.sh/ and rerun this script."
+                exit 1
+            fi
+        else
+            print_error "$cmd is not installed. Please install it first."
+            exit 1
+        fi
+    fi
+}
+
+# Check for python-magic / libmagic
+check_python_magic() {
+    python3 - <<'EOF' >/dev/null 2>&1
+import magic
+EOF
+    if [[ $? -ne 0 ]]; then
+        if [[ "$OS" == "macos" ]]; then
+            if command -v brew &> /dev/null; then
+                print_warning "python-magic not found. Installing libmagic via Homebrew..."
+                brew install libmagic
+                pip3 install python-magic
+            else
+                print_error "python-magic is required but Homebrew is not installed."
+                echo "Install Homebrew from https://brew.sh/ and install libmagic and python-magic manually."
+                exit 1
+            fi
+        else
+            print_error "python-magic is not installed. Run 'pip install python-magic' and ensure libmagic is available."
+            exit 1
+        fi
     fi
 }
 
 print_status "Checking prerequisites..."
 
-# Check Python
-if command -v python3 &> /dev/null; then
-    PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2)
-    PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d'.' -f1)
-    PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f2)
-    
-    if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 8 ]); then
-        print_error "Python 3.8+ is required. Found: $(python3 --version)"
-        exit 1
-    fi
-    print_success "Python $(python3 --version | cut -d' ' -f2) found"
-else
-    print_error "Python 3 is not installed"
-    exit 1
-fi
+# Ensure commands exist (install via Homebrew on macOS if missing)
+check_command python3 python
+check_command node node
+check_command npm npm
+check_python_magic
 
-# Check Node.js
-if command -v node &> /dev/null; then
-    NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
-    if [ "$NODE_VERSION" -lt 18 ]; then
-        print_error "Node.js 18+ is required. Found: $(node --version)"
-        exit 1
-    fi
-    print_success "Node.js $(node --version) found"
-else
-    print_error "Node.js is not installed"
+# Check Python version
+PYTHON_VERSION=$(python3 --version | cut -d' ' -f2 | cut -d'.' -f1,2)
+PYTHON_MAJOR=$(echo $PYTHON_VERSION | cut -d'.' -f1)
+PYTHON_MINOR=$(echo $PYTHON_VERSION | cut -d'.' -f2)
+
+if [ "$PYTHON_MAJOR" -lt 3 ] || ([ "$PYTHON_MAJOR" -eq 3 ] && [ "$PYTHON_MINOR" -lt 8 ]); then
+    print_error "Python 3.8+ is required. Found: $(python3 --version)"
     exit 1
 fi
+print_success "Python $(python3 --version | cut -d' ' -f2) found"
+
+# Check Node.js version
+NODE_VERSION=$(node --version | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$NODE_VERSION" -lt 18 ]; then
+    print_error "Node.js 18+ is required. Found: $(node --version)"
+    exit 1
+fi
+print_success "Node.js $(node --version) found"
 
 # Check npm
-check_command npm
 print_success "npm $(npm --version) found"
 
 # Setup Backend
