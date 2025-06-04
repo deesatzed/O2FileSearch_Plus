@@ -50,6 +50,24 @@ O2FileSearchPlus Enhanced is a powerful local file search and indexing tool with
 - Python 3.7+ and Pip
 - Node.js (v18.x or later recommended) and npm
 
+### macOS Setup
+
+Use [Homebrew](https://brew.sh/) to install the required runtimes on macOS:
+
+```bash
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+brew install python@3.11 node
+```
+
+Verify the tools are available:
+
+```bash
+python3 --version
+node --version
+```
+
+Continue with the [Backend Setup](#2-backend-setup) and [Frontend Setup](#3-frontend-setup).
+
 ### 1. Clone the Repository
 
 First, clone the repository to your local machine:
