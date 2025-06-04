@@ -190,6 +190,40 @@ server {
 }
 ```
 
+### Option 4: Launchd on macOS
+
+For macOS environments, you can run the backend (and optional frontend) using Launchd. Complete the [macOS setup](README.md#macos-setup) first.
+
+#### Backend Plist
+1. **Create the plist** (e.g., `~/Library/LaunchAgents/com.o2filesearch.backend.plist`):
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+   <plist version="1.0">
+   <dict>
+       <key>Label</key><string>com.o2filesearch.backend</string>
+       <key>WorkingDirectory</key><string>/path/to/O2FileSearchPlus/backend</string>
+       <key>ProgramArguments</key>
+       <array>
+           <string>/usr/local/bin/python3</string>
+           <string>main.py</string>
+       </array>
+       <key>RunAtLoad</key><true/>
+       <key>StandardOutPath</key><string>/tmp/o2_backend.log</string>
+       <key>StandardErrorPath</key><string>/tmp/o2_backend.err</string>
+   </dict>
+   </plist>
+   ```
+
+2. **Load and unload**:
+   ```bash
+   launchctl load ~/Library/LaunchAgents/com.o2filesearch.backend.plist
+   launchctl unload ~/Library/LaunchAgents/com.o2filesearch.backend.plist
+   ```
+
+#### Frontend Plist (Optional)
+Create a similar plist that runs `npm start` in the `frontend` directory if you want the frontend managed by Launchd as well.
+
 ## 🔧 Configuration
 
 ### Environment Variables
