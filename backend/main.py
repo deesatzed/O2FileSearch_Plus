@@ -492,8 +492,8 @@ class SearchEngine:
         conn = sqlite3.connect(self.db_path)
         cursor = conn.cursor()
         
-        # Build the query
-        query_parts = ["SELECT * FROM files_metadata WHERE 1=1"]
+        # Build the query. Use an alias so filter clauses remain valid
+        query_parts = ["SELECT fm.* FROM files_metadata fm WHERE 1=1"]
         params = []
         
         # Extension filter
