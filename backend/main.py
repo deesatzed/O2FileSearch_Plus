@@ -389,7 +389,7 @@ class FileIndexer:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
             cursor.execute('''
-                UPDATE indexing_status 
+                UPDATE indexing_status
                 SET progress_percentage = ?, current_directory = ?
                 WHERE id = 1
             ''', (progress, current_file))
@@ -493,7 +493,8 @@ class SearchEngine:
         cursor = conn.cursor()
         
         # Build the query
-        query_parts = ["SELECT * FROM files_metadata WHERE 1=1"]
+        # Start with an alias so later conditions referencing "fm" work
+        query_parts = ["SELECT fm.* FROM files_metadata fm WHERE 1=1"]
         params = []
         
         # Extension filter
